@@ -7,6 +7,11 @@ import sys
 '''
 Autores: Kevin Hernandez
          Estefany Salas
+Para ejecutarlo:
+                1. Dar permisos de ejecución
+                2. ./memon -s tiempo_en_segundos
+Para ver todas las opciones:
+                ./memon -h
 '''
 class memon:
     def __init__(self, tiempo_ejecucion, tiempo_analisis):
