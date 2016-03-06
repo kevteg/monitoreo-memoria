@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*
+import argparse
+import os
+import time
+import sys
+'''
+Autores: Kevin Hernandez
+         Estefany Salas
+'''
+class memon:
+    def __init__(self, tiempo_ejecucion, tiempo_analisis):
+        rango_eval = range(100, 1001);
+        if tiempo_analisis in rango_eval:
+            self.tiempo_analisis = tiempo_analisis
+            self.tiempo_ejecucion = tiempo_ejecucion
+            self.autores = ["Estefany Salas", "Kevin Hernández"]
+            os.system("clear")
+            self.engine();
+        else:
+            print "El tiempo minimo para el analisis es entre 100 y 1000 ms"
+
+    def engine(self):
+        memoria_total    = int(os.popen("cat /proc/meminfo | grep MemTotal | grep -Eo '[0-9]{0,9}'").read())
+        running_time     = 0
+        may_pico_memoria = 0
+        men_pico_memoria = memoria_total;
+        procesos         = 0
+
+        while running_time < self.tiempo_ejecucion + self.tiempo_analisis/1000.0:
+            memoria_disponible = int(os.popen("cat /proc/meminfo | grep MemAvailable | grep -Eo '[0-9]{0,9}'").read())
+            memoria_en_uso     = ((memoria_total - memoria_disponible) / 1024.0)
+            may_pico_memoria   = memoria_en_uso if memoria_en_uso > may_pico_memoria else may_pico_memoria
+            men_pico_memoria   = memoria_en_uso if memoria_en_uso < men_pico_memoria else men_pico_memoria
+            procesos_act       = int(os.popen("ps -ax --no-headers | wc -l").read())
+            procesos           = procesos_act if procesos_act > procesos else procesos
+            self.showInfo(running_time, memoria_total, may_pico_memoria, men_pico_memoria, procesos_act, procesos, may_pico_memoria/procesos , self.autores, memoria_en_uso)
+
+            running_time += self.tiempo_analisis/1000.0
+            time.sleep(self.tiempo_analisis/1000.0);
+
+
+
+    def showInfo(self, tiempo_ejecucion, total_memoria, may_pico_memoria, men_pico_memoria, procesos_act, total_procesos, promedio_memoria, autores, memoria_en_uso):
+
+        print "\033[0;0H"
+        print "El programa se ejecutará durante {} segundos\n".format(self.tiempo_ejecucion)
+        print "Tiempo de ejecución: {}s".format(tiempo_ejecucion)
+        print "Total de memoria del equipo: {0:.4f}GB".format((total_memoria/1024/1024.0))
+        print "Mayor pico de memoria detectado: {0:.4f}MB".format(may_pico_memoria)
+        print "Menor pico de memoria detectado: {0:.4f}MB".format(men_pico_memoria)
+        print "Total de procesos ejecutados desde inicio del programa: {}".format(total_procesos)
+        print "Procesos en ejecución: {}".format(procesos_act)
+        print "Promedio de memoria usada por proceso en ejecución: {0:.4f}MB".format(memoria_en_uso/procesos_act)
+        print "Promedio general de memoria utilizada por todos los procesos desde el inicio del programa: {0:.4f}MB".format(promedio_memoria)
+        print "(Memoria en uso {0:.4f}MB/{1:.4f}MB )".format(memoria_en_uso, (total_memoria/1024.0))
+
+        print "\nElaborado por: "
+        for i in autores:
+            print "\t{}".format(i)
+
+
+
+parser = argparse.ArgumentParser(prog='memon', usage='%(prog)s [options]',description='Script para ver el uso de memoria durante un tiempo definido por el usuario.')
+parser.add_argument('-s','--segundos',dest='tiempo',type=int, required = True, help='Tiempo en segundos que dura el análisis de la memoria.\n Argumento necesario para usar el monitor')
+parser.add_argument('-t','--tanalisis',dest='tiempo_analisis',type=int, default=500, help='Tiempo intermedio de analisis de memoria, por defecto 500ms')
+args = parser.parse_args()
+
+monitor = memon(args.tiempo, args.tiempo_analisis);
